@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Google Calendar Authentication Setup Script
+Google Authentication Setup Script
 
-This script helps you set up OAuth 2.0 credentials for Google Calendar integration.
+This script helps you set up OAuth 2.0 credentials for Google services integration.
 Follow the instructions in the console.
 """
 
@@ -12,24 +12,31 @@ from pathlib import Path
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-# Define scopes needed for Google Calendar
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
+# Define scopes needed for Google services
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/spreadsheets",
+]
 
 # Path for token storage
-TOKEN_PATH = Path(os.path.expanduser("~/.credentials/calendar_token.json"))
+TOKEN_PATH = Path(os.path.expanduser("~/.credentials/google_token.json"))
 CREDENTIALS_PATH = Path("credentials.json")
 
 
 def setup_oauth():
-    """Set up OAuth 2.0 for Google Calendar"""
-    print("\n=== Google Calendar OAuth Setup ===\n")
+    """Set up OAuth 2.0 for Google services"""
+    print("\n=== Google OAuth Setup ===\n")
+    print("This script will guide you through authorizing access to Google services.")
+    print("If you have previously authorized, this may re-authorize and request new permissions.\n")
 
     if not CREDENTIALS_PATH.exists():
         print(f"Error: {CREDENTIALS_PATH} not found!")
-        print("\nTo set up Google Calendar integration:")
+        print("\nTo set up Google services integration:")
         print("1. Go to https://console.cloud.google.com/")
         print("2. Create a new project or select an existing one")
-        print("3. Enable the Google Calendar API")
+        print("3. Enable the Google Calendar API, Google Drive API, Google Docs API, and Google Sheets API")
         print("4. Create OAuth 2.0 credentials (Desktop application)")
         print(
             "5. Download the credentials and save them as 'credentials.json' in this directory"
@@ -37,7 +44,7 @@ def setup_oauth():
         print("\nThen run this script again.")
         return False
 
-    print(f"Found credentials.json. Setting up OAuth flow...")
+    print(f"Found {CREDENTIALS_PATH}. Setting up OAuth flow...")
 
     try:
         # Run the OAuth flow
@@ -51,22 +58,23 @@ def setup_oauth():
         print(f"\nSuccessfully saved credentials to {TOKEN_PATH}")
 
         # Test the API connection
-        print("\nTesting connection to Google Calendar API...")
+        print("\nTesting connection to Google Calendar API (as a sample)...")
         service = build("calendar", "v3", credentials=creds)
         calendar_list = service.calendarList().list().execute()
-        calendars = calendar_list.get("items", [])
+        # Check if 'items' key exists, otherwise default to empty list
+        calendars = calendar_list.get("items", []) 
 
         if calendars:
-            print(f"\nSuccess! Found {len(calendars)} calendars:")
+            print(f"\nSuccess! Found {len(calendars)} calendars (sample test):")
             for calendar in calendars:
-                print(f"- {calendar['summary']} ({calendar['id']})")
+                print(f"- {calendar.get('summary', 'N/A')} ({calendar.get('id', 'N/A')})")
         else:
             print(
-                "\nSuccess! Connected to Google Calendar API, but no calendars found."
+                "\nSuccess! Connected to Google Calendar API (sample test), but no calendars found."
             )
 
         print(
-            "\nOAuth setup complete! You can now use the Google Calendar integration."
+            "\nOAuth setup complete! You can now use the Google services integration."
         )
         return True
 

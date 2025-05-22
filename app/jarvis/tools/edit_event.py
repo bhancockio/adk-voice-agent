@@ -2,7 +2,8 @@
 Edit event tool for Google Calendar integration.
 """
 
-from .calendar_utils import get_calendar_service, parse_datetime
+from .calendar_utils import parse_datetime
+from .google_utils import get_google_service
 
 
 def edit_event(
@@ -25,11 +26,11 @@ def edit_event(
     """
     try:
         # Get calendar service
-        service = get_calendar_service()
+        service = get_google_service("calendar", "v3")
         if not service:
             return {
                 "status": "error",
-                "message": "Failed to authenticate with Google Calendar. Please check credentials.",
+                "message": "Failed to authenticate with Google Calendar. Please run setup_google_auth.py or check credentials.",
             }
 
         # Always use primary calendar

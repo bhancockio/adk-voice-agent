@@ -2,60 +2,7 @@
 Utility functions for Google Calendar integration.
 """
 
-import json
-import os
 from datetime import datetime
-from pathlib import Path
-
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-
-# Define scopes needed for Google Calendar
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
-
-# Path for token storage
-TOKEN_PATH = Path(os.path.expanduser("~/.credentials/calendar_token.json"))
-CREDENTIALS_PATH = Path("credentials.json")
-
-
-def get_calendar_service():
-    """
-    Authenticate and create a Google Calendar service object.
-
-    Returns:
-        A Google Calendar service object or None if authentication fails
-    """
-    creds = None
-
-    # Check if token exists and is valid
-    if TOKEN_PATH.exists():
-        creds = Credentials.from_authorized_user_info(
-            json.loads(TOKEN_PATH.read_text()), SCOPES
-        )
-
-    # If credentials don't exist or are invalid, refresh or get new ones
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            # If credentials.json doesn't exist, we can't proceed with OAuth flow
-            if not CREDENTIALS_PATH.exists():
-                print(
-                    f"Error: {CREDENTIALS_PATH} not found. Please follow setup instructions."
-                )
-                return None
-
-            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
-            creds = flow.run_local_server(port=0)
-
-        # Save the credentials for the next run
-        TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
-        TOKEN_PATH.write_text(creds.to_json())
-
-    # Create and return the Calendar service
-    return build("calendar", "v3", credentials=creds)
 
 
 def format_event_time(event_time):
